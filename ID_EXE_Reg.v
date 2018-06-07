@@ -14,4 +14,18 @@ module ID_EXE_Reg (clk, rst, regWr_IN, memRd_IN, memWr_IN, aluOp_IN, cWr_IN, zWr
   output[7:0] immConst_OUT, regData1_OUT, regData2_OUT, brDisp_OUT;
   output[11:0] pcPlus1_OUT;
 
+  always @(posedge clk, posedge rst) begin
+    if (rst) begin
+      {regWr_OUT, memRd_OUT, memWr_OUT, cWr_OUT, zWr_OUT, rd_OUT, rs_OUT, rt_OUT, aluOp_OUT,
+      immConst_OUT, regData1_OUT, regData2_OUT, brDisp_OUT, pcPlus1_OUT} <= 0;
+    end
+    else begin
+      regWr_OUT <= regWr_IN; memRd_OUT <= memRd_IN; memWr_OUT <= memWr_IN;
+      cWr_OUT <= cWr_IN; zWr_OUT <= zWr_IN; rd_OUT <= rd_IN;
+      rs_OUT <= rs_IN; rt_OUT <= rt_IN; aluOp_OUT <= aluOp_IN;
+      immConst_OUT <= immConst_IN; regData1_OUT <= regData1_IN; regData2_OUT <= regData2_IN;
+      brDisp_OUT <= brDisp_IN; pcPlus1_OUT <= pcPlus1_IN;
+    end
+  end
+
 endmodule // ID_EXE_Reg
