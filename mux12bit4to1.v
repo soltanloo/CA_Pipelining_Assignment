@@ -8,5 +8,6 @@ module mux12bit4to1 (in1, in2, in3, in4, sel, out);
     1:begin out = in2 end
     2:begin out = in3 end
     3:begin out = in4 end
+    endcase
   end
 endmodule // mux12bit4to1
