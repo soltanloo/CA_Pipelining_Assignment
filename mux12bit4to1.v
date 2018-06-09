@@ -4,10 +4,10 @@ module mux12bit4to1 (in1, in2, in3, in4, sel, out);
   output reg [11:0] out;
   always @ (in1, in2, in3, in4, sel) begin
     case(sel)
-    0:begin out = in1 end
-    1:begin out = in2 end
-    2:begin out = in3 end
-    3:begin out = in4 end
+    0:begin out = in1; end
+    1:begin out = in2; end
+    2:begin out = in3; end
+    3:begin out = in4; end
     endcase
   end
 endmodule // mux12bit4to1
