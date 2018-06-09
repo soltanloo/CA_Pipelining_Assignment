@@ -1,6 +1,6 @@
 module TB();
   reg clk=0,rst=0,start;
-  cpu UUT(.clk(clk), .rst(rst), .start(start));
+  CPU UUT(.clk(clk), .rst(rst), .start(start));
   initial begin
     #100
     rst=1;
