@@ -63,7 +63,7 @@ module controller(clk, rst, start, push, pop,
         5'b10110 : begin if(Cin)begin pcSel = 3; end  end
         5'b10111 : begin if(~Cin)begin pcSel = 3; end end
         5'b11100 : begin pcSel=1; end
-        5'b11101 : begin pcsel=1; push=1; end
+        5'b11101 : begin pcSel=1; push=1; end
         5'b11110 : begin pop=1; pcSel=2; end
         endcase
       end
