@@ -8,11 +8,11 @@ module ID_EXE_Reg (clk, rst, regWr_IN, memRd_IN, memWr_IN, aluOp_IN, cWr_IN, zWr
   input[3:0] aluOp_IN;
   input[7:0] immConst_IN, regData1_IN, regData2_IN, brDisp_IN;
   input[11:0] pcPlus1_IN;
-  output regWr_OUT, memRd_OUT, memWr_OUT, cWr_OUT, zWr_OUT;
-  output[2:0] rd_OUT, rs_OUT, rt_OUT;
-  output[3:0] aluOp_OUT;
-  output[7:0] immConst_OUT, regData1_OUT, regData2_OUT, brDisp_OUT;
-  output[11:0] pcPlus1_OUT;
+  output reg regWr_OUT, memRd_OUT, memWr_OUT, cWr_OUT, zWr_OUT;
+  output reg[2:0] rd_OUT, rs_OUT, rt_OUT;
+  output reg[3:0] aluOp_OUT;
+  output reg[7:0] immConst_OUT, regData1_OUT, regData2_OUT, brDisp_OUT;
+  output reg[11:0] pcPlus1_OUT;
 
   always @(posedge clk, posedge rst) begin
     if (rst) begin
