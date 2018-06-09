@@ -1,15 +1,16 @@
 module CPU (clk, rst, start);
   input clk, rst, start;
-  wire halt, stm, regMemWriteEn, push, pop, pcSel, aluToC, cToAlu, aluToZ, Zout, cWriteEn, zWriteEn, memWriteEn,
+  wire halt, stm, regMemWriteEn, push, pop, aluToC, cToAlu, aluToZ, Zout, cWriteEn, zWriteEn, memWriteEn,
   immAndmem, ldm, ID_EX_regWrOut, ID_EX_memRdOut, ID_EX_memWrOut, ID_EX_cWrOut, ID_EX_zWrOut, ID_EX_immConstOut,
-  EX_MEM_regWrOut, EX_MEM_memWrOut, EX_MEM_memRdOut, pcWriteEn, MemForwardWire, forward1wire, forward2wire,
+  EX_MEM_regWrOut, EX_MEM_memWrOut, EX_MEM_memRdOut, pcWriteEn, MemForwardWire,
   hazardSignal, flushSignal, IF_ID_WrOut, brTakenOut;
+  wire[1:0] pcSel, forward1wire, forward2wire;
   wire[3:0] aluOp, ID_EX_aluOpOut;
   wire[4:0] ID_EX_opCodeOut;
   wire[2:0] regMemReadReg2Addr, ID_EX_rsOut, ID_EX_rtOut, ID_EX_rdOut, EX_MEM_rdOut, MEM_WB_rdOut;
   wire[7:0] regMemOutData1, regMemOutData2, regMemInData, ID_EX_brDipsOut, ID_EX_regMemOutData1, ID_EX_regMemOutData2,
   aluIn1MuxOut, aluIn2FirstMuxOut, aluIn2SecondMuxOut, EX_MEM_aluResOut, EX_MEM_memWrDataOut,  dataMemAddr,
-  dataMemOutput, MEM_WB_aluResOut, MEM_WB_memReadDataOut;
+  dataMemOutput, MEM_WB_aluResOut, MEM_WB_memReadDataOut, aluOutput;
   wire[11:0] pcOut, pcIn, pcAdded1Wire, IF_ID_pcPlus1Out, stackOut, ID_EX_pcPlus1Out, signExtOut, pcBranchValue;
   wire[18:0] instMemOut, IF_ID_instOut;
 
@@ -25,10 +26,10 @@ module CPU (clk, rst, start);
    .readAdr2(regMemReadReg2Addr), .writeAdr(IF_ID_instOut[13:11]), .readData1(regMemOutData1), .readData2(regMemOutData2),
    .writeData(regMemInData));
   stack STACK_(.clk(clk), .rst(rst), .push(push), .pop(pop), .writeData(IF_ID_pcPlus1Out), .readData(stackOut));
-  HazardDetectionUnit HAZARD_DETEC_UNIT_(.ID_EXE_MemRd(ID_EX_memRdOut), .ID_EXE_rd(ID_EX_rdOut), .IF_ID_rs(IF_ID_rs), .IF_ID_rt(IF_ID_rt), .opcode(IF_ID_instOut[18:14]), .branchTaken(brTakenOut),
+  HazardDetectionUnit HAZARD_DETEC_UNIT_(.ID_EXE_MemRd(ID_EX_memRdOut), .ID_EXE_rd(ID_EX_rdOut), .IF_ID_rs(IF_ID_instOut[7:5]), .IF_ID_rt(IF_ID_instOut[10:8]), .opcode(IF_ID_instOut[18:14]), .branchTaken(brTakenOut),
     .IF_ID_Wr(IF_ID_WrOut), .PCWr(pcWriteEn), .ID_EXE_Zero(hazardSignal), .flush(flushSignal));
   controller CU_(.clk(clk), .rst(rst), .start(start), .push(push), .pop(pop), .memWriteEn(memWriteEn), .regWriteEn(regMemWriteEn), .immAndmem(immAndmem), .stm(stm), .ldm(ldm), .Cin(cToAlu), .Zin(Zout),
-     .opcodeFunc(IF_ID_instOut[18:14]), .aluOp(aluOp), .cWriteEn(cWriteEn), .zWriteEn(zWriteEn), .halt(halt), .pc(IF_ID_pcPlus1Out), .hazard(hazardSignal));
+     .opcodeFunc(IF_ID_instOut[18:14]), .aluOp(aluOp), .cWriteEn(cWriteEn), .zWriteEn(zWriteEn), .halt(halt), .pc(IF_ID_pcPlus1Out), .pcSel(pcSel), .hazard(hazardSignal));
   ID_EXE_Reg ID_EX_(.clk(clk), .rst(rst), .regWr_IN(regMemWriteEn), .memRd_IN(ldm), .memWr_IN(memWriteEn), .aluOp_IN(aluOp), .cWr_IN(cWriteEn), .zWr_IN(zWriteEn),
        .immConst_IN(immAndmem), .rd_IN(IF_ID_instOut[13:11]), .rs_IN(IF_ID_instOut[7:5]), .rt_IN(IF_ID_instOut[10:8]), .regData1_IN(regMemOutData1), .regData2_IN(regMemOutData2), .brDisp_IN(IF_ID_instOut[7:0]), .pcPlus1_IN(IF_ID_pcPlus1Out),
        .regWr_OUT(ID_EX_regWrOut), .memRd_OUT(ID_EX_memRdOut), .memWr_OUT(ID_EX_memWrOut), .aluOp_OUT(ID_EX_aluOpOut), .cWr_OUT(ID_EX_cWrOut), .zWr_OUT(ID_EX_zWrOut), .immConst_OUT(ID_EX_immConstOut),
