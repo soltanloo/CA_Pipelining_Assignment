@@ -2,13 +2,13 @@ module controller(clk, rst, start, push, pop,
    memWriteEn, regWriteEn, immAndmem,
    stm, ldm, Cin, Zin,
    opcodeFunc, aluOp, cWriteEn, zWriteEn,
-   halt, pc, pcSel, hazard);
+   halt, pc, pcSel, hazard, pcWriteCU);
   input[4:0] opcodeFunc;
   input clk, rst, start, halt, Cin, Zin, hazard;
   input[11:0] pc;
   output reg push, pop,
      memWriteEn, regWriteEn, immAndmem,
-     stm, ldm, cWriteEn, zWriteEn;
+     stm, ldm, cWriteEn, zWriteEn, pcWriteCU;
   output reg[3:0] aluOp;
   output reg[1:0] pcSel;
   reg[1:0] ps, ns;
@@ -33,7 +33,7 @@ module controller(clk, rst, start, push, pop,
       IDLE: begin end
       starting: begin  end
       computing:begin
-
+      pcWriteCU = 1;
       if(~hazard)begin
         case(opcodeFunc)
         5'b00000 : begin regWriteEn=1; cWriteEn=1; zWriteEn=1; aluOp= 4'b0000; end
