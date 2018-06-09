@@ -1,15 +1,16 @@
 module controller(clk, rst, start, push, pop,
    memWriteEn, regWriteEn, immAndmem,
-   stm, ldm, branch, jmp, ret, Cin, Zin,
+   stm, ldm, Cin, Zin,
    opcodeFunc, aluOp, cWriteEn, zWriteEn,
-   halt, pcEn, pc);
+   halt, pc, pcSel);
   input[4:0] opcodeFunc;
   input clk, rst, start, halt, Cin, Zin;
   input[11:0] pc;
   output reg push, pop,
      memWriteEn, regWriteEn, immAndmem,
-     stm, ldm, branch, jmp, ret, cWriteEn, zWriteEn, pcEn;
+     stm, ldm, cWriteEn, zWriteEn;
   output reg[3:0] aluOp;
+  output reg[1:0] pcSel;
   reg[1:0] ps, ns;
   parameter [1:0] IDLE=0, starting=1, computing=2;
 
@@ -25,14 +26,15 @@ module controller(clk, rst, start, push, pop,
 
   always@(ps, start, halt, pc) begin
     push=0; pop=0;
-    memWriteEn=0; regWriteEn=0; immAndmem=0; pcEn=0;
-    stm=0; ldm=0; branch=0; jmp=0; ret=0; cWriteEn=0; zWriteEn=0;
+    memWriteEn=0; regWriteEn=0; immAndmem=0;
+    stm=0; ldm=0; cWriteEn=0; zWriteEn=0; pcSel=0;
     aluOp= 4'b0000;
     case(ps)
       IDLE: begin end
       starting: begin  end
       computing:begin
-        pcEn=1;
+
+
         case(opcodeFunc)
         5'b00000 : begin regWriteEn=1; cWriteEn=1; zWriteEn=1; aluOp= 4'b0000; end
         5'b00001 : begin regWriteEn=1; cWriteEn=1; zWriteEn=1; aluOp= 4'b0001; end
@@ -56,13 +58,13 @@ module controller(clk, rst, start, push, pop,
         5'b11011 : begin regWriteEn=1; zWriteEn=1; aluOp= 4'b1011; end
         5'b10000 : begin regWriteEn=1; immAndmem=1; ldm=1; aluOp=4'b0000; end
         5'b10001 : begin memWriteEn=1; immAndmem=1; stm=1; aluOp=4'b0000; end
-        5'b10100 : begin branch =  Zin;  end
-        5'b10101 : begin branch = ~Zin; end
-        5'b10110 : begin branch =  Cin;  end
-        5'b10111 : begin branch = ~Cin; end
-        5'b11100 : begin jmp=1; end
-        5'b11101 : begin jmp=1; push=1; end
-        5'b11110 : begin pop=1; ret=1; end
+        5'b10100 : begin if(Zin)begin pcSel = 3; end  end
+        5'b10101 : begin if(~Zin)begin pcSel = 3; end end
+        5'b10110 : begin if(Cin)begin pcSel = 3; end  end
+        5'b10111 : begin if(~Cin)begin pcSel = 3; end end
+        5'b11100 : begin pcSel=1; end
+        5'b11101 : begin pcsel=1; push=1; end
+        5'b11110 : begin pop=1; pcSel=2; end
         endcase
       end
   endcase
