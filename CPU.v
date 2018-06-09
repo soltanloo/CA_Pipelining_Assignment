@@ -1,4 +1,4 @@
-module dataPath (clk, rst, start);
+module CPU (clk, rst, start);
   input clk, rst, start;
   wire halt, stm, regMemWriteEn, push, pop, pcSel, aluToC, cToAlu, aluToZ, Zout, cWriteEn, zWriteEn, memWriteEn,
   immAndmem, ldm, ID_EX_regWrOut, ID_EX_memRdOut, ID_EX_memWrOut, ID_EX_cWrOut, ID_EX_zWrOut, ID_EX_immConstOut,
