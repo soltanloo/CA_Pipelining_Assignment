@@ -4,8 +4,8 @@ module IF_ID_Reg (clk, rst, flush, IF_ID_Wr, pcPlus1_IN, instruction_IN,
   input clk, rst, flush, IF_ID_Wr;
   input[11:0] pcPlus1_IN;
   input[18:0] instruction_IN;
-  output[11:0] pcPlus1_OUT;
-  output[18:0] instruction_OUT;
+  output reg[11:0] pcPlus1_OUT;
+  output reg[18:0] instruction_OUT;
 
   always @(posedge clk, posedge rst) begin
     if (rst) begin
