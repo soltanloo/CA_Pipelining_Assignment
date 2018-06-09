@@ -1,7 +1,7 @@
 module ALU(A, B, fn, sc, Cin, Y, Zero, Cout);
 
   input[7:0] A, B;
-  input[4:0] fn;
+  input[3:0] fn;
   input[2:0] sc;
   input Cin;
   output[7:0] Y;
