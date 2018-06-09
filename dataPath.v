@@ -1,8 +1,10 @@
 module dataPath (clk, rst, start);
   input clk, rst, start;
-  wire halt, stm, regMemWriteEn, push, pop, pcSel;
-  wire[2:0] regMemReadReg2Addr, ID_EX_rsOut, ID_EX_rtOut, ID_EX_rdOut;
-  wire[7:0] regMemOutData1, regMemOutData2, regMemInData, ID_EX_brDipsOut, ID_EX_regMemOutData1, ID_EX_regMemOutData2;
+  wire halt, stm, regMemWriteEn, push, pop, pcSel, aluToC, cToAlu, aluToZ, Zout, cWriteEn, zWriteEn, memWriteEn;
+  wire[2:0] regMemReadReg2Addr, ID_EX_rsOut, ID_EX_rtOut, ID_EX_rdOut, EX_MEM_rdOut, MEM_WB_rdOut;
+  wire[7:0] regMemOutData1, regMemOutData2, regMemInData, ID_EX_brDipsOut, ID_EX_regMemOutData1, ID_EX_regMemOutData2
+  aluIn1MuxOut, aluIn2FirstMuxOut, aluIn2SecondMuxOut, EX_MEM_aluResOut, EX_MEM_memWrDataOut,  dataMemAddr,
+  dataMemOutput, MEM_WB_aluResOut, MEM_WB_memReadDataOut;
   wire[11:0] pcOut, pcIn, pcAdded1Wire, IF_ID_pcPlus1Out, stackOut, ID_EX_pcPlus1Out, signExtOut, pcBranchValue;
   wire[18:0] instMemOut, IF_ID_instOut;
 
@@ -30,23 +32,22 @@ module dataPath (clk, rst, start);
   signExt SIGN_EXT_(.in(ID_EX_brDipsOut), .out(signExtOut));
   adder12bit BRANCH_ADDER_(.in1(signExtOut), .in2(ID_EX_pcPlus1Out), .out(pcBranchValue));
   mux8bit3to1 ALU_IN1_MUX_(.in1(ID_EX_regMemOutData1), .in2(), in3, sel, out);
-  mux8bit3to1 ALU_IN2_FIRST_MUX_(.in1(ID_EX_regMemOutData2), in2, in3, sel, out);
-  mux8bit ALU_IN2_SECOND_MUX_(in1, in2, control, out);
-  ALU AlU_(.in1(regMemOutData1), .in2(aluInput), .cIn(cToAlu), .sc(instMemWire[7:5]), .aluOp(aluOp), .zero(aluToZ),
-   .cOut(aluToC), .out(aluOutput));
+  mux8bit3to1 ALU_IN2_FIRST_MUX_(.in1(ID_EX_regMemOutData2), in2, in3, sel, .out(aluIn2FirstMuxOut));
+  mux8bit ALU_IN2_SECOND_MUX_(in1, .in2(ID_EX_brDipsOut), control, .out(aluIn2SecondMuxOut));
+  ALU AlU_(.A(aluIn1MuxOut), .B(aluIn2SecondMuxOut), .fn(aluOp), .sc(ID_EX_rsOut), .Cin(cToAlu), .Y(aluOutput), .Zero(aluToZ), .Cout(aluToC));
   flipflop C_(.clk(clk), .rst(rst), .writeEn(cWriteEn), .in(aluToC), .out(cToAlu));
   flipflop Z_(.clk(clk), .rst(rst), .writeEn(zWriteEn), .in(aluToZ), .out(Zout));
   ForwardingUnit FWD_UNIT_(EXE_MEM_RegWr, MEM_WB_RegWr, MEM_WB_rd,
     MEM_WB_MemRd, EXE_MEM_MemWr, ID_EXE_rs, ID_EXE_rt, EXE_MEM_rd, MemForward,
     forward1, forward2);
-  EXE_MEM_Reg EX_MEM_(clk, rst, regWr_IN, memWr_IN, memRd_IN, aluRes_IN, memWrData_IN, rd_IN,
-      regWr_OUT, memWr_OUT, memRd_OUT, aluRes_OUT, memWrData_OUT, rd_OUT);
+  EXE_MEM_Reg EX_MEM_(.clk(clk), .rst(rst), .regWr_IN, .memWr_IN, .memRd_IN, .aluRes_IN(aluOutput), .memWrData_IN(ID_EX_regMemOutData2), .rd_IN(ID_EX_rdOut),
+      .regWr_OUT, .memWr_OUT, .memRd_OUT, .aluRes_OUT(EX_MEM_aluResOut), .memWrData_OUT(EX_MEM_memWrDataOut), .rd_OUT(EX_MEM_rdOut));
 //MEM
-  mux8bit MEM_ADDR_MUX_(.in1(aluOutput), .in2(dataMemOutput), .control(ldm), .out(regMemInData));
-  dataMemory DATA_MEM_(.clk(clk), .rst(rst), .writeEn(memWriteEn), .address(aluOutput), .readData(dataMemOutput),
-   .writeData(regMemOutData2));
-  MEM_WB_Reg MEM_WB_(clk, rst, memRd_IN, regWr_IN, memReadData_IN, aluRes_IN, rd_IN,
-     memRd_OUT, regWr_OUT, memReadData_OUT, aluRes_OUT, rd_OUT);
+  mux8bit MEM_ADDR_MUX_(.in1(EX_MEM_aluResOut), .in2(), .control(ldm), .out(dataMemAddr));
+  dataMemory DATA_MEM_(.clk(clk), .rst(rst), .writeEn(memWriteEn), .address(dataMemAddr), .readData(dataMemOutput),
+   .writeData(EX_MEM_memWrDataOut));
+  MEM_WB_Reg MEM_WB_(.clk(clk), .rst(rst), .memRd_IN, .regWr_IN, .memReadData_IN(dataMemOutput), .aluRes_IN(EX_MEM_aluResOut), .rd_IN(EX_MEM_rdOut),
+     .memRd_OUT, .regWr_OUT, .memReadData_OUT(MEM_WB_memReadDataOut), .aluRes_OUT(MEM_WB_aluResOut), .rd_OUT(MEM_WB_rdOut));
 //WB
-  mux8bit WB_DATA_MUX_(in1, in2, control, out);
+  mux8bit WB_DATA_MUX_(.in1(MEM_WB_aluResOut), .in2(MEM_WB_memReadDataOut), .control, .out(regMemInData));
 endmodule
