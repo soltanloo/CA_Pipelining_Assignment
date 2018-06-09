@@ -4,7 +4,7 @@ module instructionMemory(PC, outInst, halt);
   output halt;
   reg[18:0] insMemory[0:4095];
   assign outInst = insMemory[PC];
-  assign halt = ~(|(currentIns));
+  assign halt = ~(|(outInst));
 /*
   initial
   begin
