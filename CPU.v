@@ -3,7 +3,7 @@ module CPU (clk, rst, start);
   wire halt, stm, regMemWriteEn, push, pop, aluToC, cToAlu, aluToZ, Zout, cWriteEn, zWriteEn, memWriteEn,
   immAndmem, ldm, ID_EX_regWrOut, ID_EX_memRdOut, ID_EX_memWrOut, ID_EX_cWrOut, ID_EX_zWrOut, ID_EX_immConstOut,
   EX_MEM_regWrOut, EX_MEM_memWrOut, EX_MEM_memRdOut, pcWriteEn, MemForwardWire,
-  hazardSignal, flushSignal, IF_ID_WrOut, brTakenOut;
+  hazardSignal, flushSignal, IF_ID_WrOut, brTakenOut, pcWriteCUwire;
   wire[1:0] pcSel, forward1wire, forward2wire;
   wire[3:0] aluOp, ID_EX_aluOpOut;
   wire[4:0] ID_EX_opCodeOut;
@@ -16,7 +16,7 @@ module CPU (clk, rst, start);
 
 //IF
   mux12bit4to1 PC_IN_MUX_(.in1(pcAdded1Wire), .in2(IF_ID_instOut[11:0]), .in3(stackOut), .in4(pcBranchValue), .sel(pcSel), .out(pcIn));
-  pc PC(.clk(clk), .rst(rst), .loadEn(pcWriteEn), .in(pcIn), .out(pcOut));
+  pc PC(.clk(clk), .rst(rst), .loadEn(pcWriteEn), .in((pcIn&pcWriteCUwire)), .out(pcOut));
   adder12bit PC_INC_(.in1(12'b000000000001), .in2(pcOut), .out(pcAdded1Wire));
   instructionMemory INST_MEM_(.PC(pcOut), .outInst(instMemOut), .halt(halt));
   IF_ID_Reg IF_ID_(.clk(clk), .rst(rst), .flush(flushSignal), .IF_ID_Wr(IF_ID_WrOut), .pcPlus1_IN(pcAdded1Wire), .instruction_IN(instMemOut), .pcPlus1_OUT(IF_ID_pcPlus1Out), .instruction_OUT(IF_ID_instOut));
@@ -29,7 +29,7 @@ module CPU (clk, rst, start);
   HazardDetectionUnit HAZARD_DETEC_UNIT_(.ID_EXE_MemRd(ID_EX_memRdOut), .ID_EXE_rd(ID_EX_rdOut), .IF_ID_rs(IF_ID_instOut[7:5]), .IF_ID_rt(IF_ID_instOut[10:8]), .opcode(IF_ID_instOut[18:14]), .branchTaken(brTakenOut),
     .IF_ID_Wr(IF_ID_WrOut), .PCWr(pcWriteEn), .ID_EXE_Zero(hazardSignal), .flush(flushSignal));
   controller CU_(.clk(clk), .rst(rst), .start(start), .push(push), .pop(pop), .memWriteEn(memWriteEn), .regWriteEn(regMemWriteEn), .immAndmem(immAndmem), .stm(stm), .ldm(ldm), .Cin(cToAlu), .Zin(Zout),
-     .opcodeFunc(IF_ID_instOut[18:14]), .aluOp(aluOp), .cWriteEn(cWriteEn), .zWriteEn(zWriteEn), .halt(halt), .pc(IF_ID_pcPlus1Out), .pcSel(pcSel), .hazard(hazardSignal));
+     .opcodeFunc(IF_ID_instOut[18:14]), .aluOp(aluOp), .cWriteEn(cWriteEn), .zWriteEn(zWriteEn), .halt(halt), .pc(IF_ID_pcPlus1Out), .pcSel(pcSel), .hazard(hazardSignal), .pcWriteCU(pcWriteCUwire));
   ID_EXE_Reg ID_EX_(.clk(clk), .rst(rst), .regWr_IN(regMemWriteEn), .memRd_IN(ldm), .memWr_IN(memWriteEn), .aluOp_IN(aluOp), .cWr_IN(cWriteEn), .zWr_IN(zWriteEn),
        .immConst_IN(immAndmem), .rd_IN(IF_ID_instOut[13:11]), .rs_IN(IF_ID_instOut[7:5]), .rt_IN(IF_ID_instOut[10:8]), .regData1_IN(regMemOutData1), .regData2_IN(regMemOutData2), .brDisp_IN(IF_ID_instOut[7:0]), .pcPlus1_IN(IF_ID_pcPlus1Out),
        .regWr_OUT(ID_EX_regWrOut), .memRd_OUT(ID_EX_memRdOut), .memWr_OUT(ID_EX_memWrOut), .aluOp_OUT(ID_EX_aluOpOut), .cWr_OUT(ID_EX_cWrOut), .zWr_OUT(ID_EX_zWrOut), .immConst_OUT(ID_EX_immConstOut),
