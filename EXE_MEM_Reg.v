@@ -4,9 +4,9 @@ module EXE_MEM_Reg (clk, rst, regWr_IN, memWr_IN, memRd_IN, aluRes_IN, memWrData
   input clk, rst, regWr_IN, memWr_IN, memRd_IN;
   input[2:0] rd_IN;
   input[7:0] aluRes_IN, memWrData_IN;
-  output regWr_OUT, memWr_OUT, memRd_OUT;
-  output[2:0] rd_OUT;
-  output[7:0] aluRes_OUT, memWrData_OUT;
+  output reg regWr_OUT, memWr_OUT, memRd_OUT;
+  output reg[2:0] rd_OUT;
+  output reg[7:0] aluRes_OUT, memWrData_OUT;
 
   always @(posedge clk, posedge rst) begin
     if (rst) begin

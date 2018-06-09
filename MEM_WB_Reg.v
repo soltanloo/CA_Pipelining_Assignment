@@ -4,9 +4,9 @@ module MEM_WB_Reg (clk, rst, memRd_IN, regWr_IN, memReadData_IN, aluRes_IN, rd_I
   input clk, rst, memRd_IN, regWr_IN;
   input[2:0] rd_IN;
   input[7:0] memReadData_IN, aluRes_IN;
-  output memRd_OUT, regWr_OUT;
-  output[2:0] rd_OUT;
-  output[7:0] memReadData_OUT, aluRes_OUT;
+  output reg memRd_OUT, regWr_OUT;
+  output reg[2:0] rd_OUT;
+  output reg[7:0] memReadData_OUT, aluRes_OUT;
 
   always @(posedge clk, posedge rst) begin
     if (rst) begin
